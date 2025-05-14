@@ -3,7 +3,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>إدارة البيانات</title>
+  <title>واجهة المستخدم</title>
   <style>
     body {
       font-family: "Cairo", sans-serif;
@@ -16,30 +16,6 @@
     h2 {
       text-align: center;
       margin-bottom: 30px;
-    }
-
-    #adminForm {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-
-    input {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      width: 200px;
-    }
-
-    button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      background-color: #2196f3;
-      color: white;
     }
 
     table {
@@ -77,29 +53,11 @@
       background-color: #4caf50;
       color: white;
     }
-
-    .admin-btn {
-      background-color: #f44336;
-      color: white;
-      padding: 6px 10px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-
   </style>
 </head>
 <body>
-  <h2>نظام تتبع المهام</h2>
+  <h2>مهامي</h2>
 
-  <!-- نموذج الإدخال -->
-  <div id="adminForm" style="display: none;">
-    <input type="text" id="name" placeholder="الاسم">
-    <input type="text" id="phone" placeholder="رقم الهاتف">
-    <input type="text" id="notes" placeholder="ملاحظات">
-    <button onclick="addEntry()">إضافة</button>
-  </div>
-
-  <!-- جدول البيانات -->
   <table>
     <thead>
       <tr>
@@ -108,44 +66,21 @@
         <th>ملاحظات</th>
         <th>الحالة</th>
         <th>بواسطة</th>
-        <th id="adminCol" style="display: none;">تحكم الأدمن</th>
       </tr>
     </thead>
     <tbody id="dataTable"></tbody>
   </table>
 
   <script>
-    // 🧠 تغيير بين "true" (أدمن) و "false" (مستخدم عادي)
-    let isAdmin = false;
-    let currentUser = "ahmed@example.com";
-    let entries = [];
+    // المستخدم الحالي
+    const currentUser = "user1@example.com";
 
-    if (isAdmin) {
-      document.getElementById("adminForm").style.display = "flex";
-      document.getElementById("adminCol").style.display = "table-cell";
-    }
-
-    function addEntry() {
-      const name = document.getElementById("name").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const notes = document.getElementById("notes").value.trim();
-
-      if (name && phone) {
-        entries.unshift({
-          name,
-          phone,
-          notes,
-          completed: false,
-          completedBy: ""
-        });
-        renderTable();
-        document.getElementById("name").value = "";
-        document.getElementById("phone").value = "";
-        document.getElementById("notes").value = "";
-      } else {
-        alert("يرجى إدخال الاسم ورقم الهاتف");
-      }
-    }
+    // بيانات جاهزة مؤقتاً (يمكن تعديلها لاحقاً)
+    let entries = [
+      { name: "أحمد", phone: "0101010101", notes: "متابعة الطلب", completed: false, completedBy: "" },
+      { name: "سارة", phone: "0202020202", notes: "تم التواصل", completed: true, completedBy: "admin" },
+      { name: "خالد", phone: "0303030303", notes: "بانتظار الرد", completed: false, completedBy: "" },
+    ];
 
     function renderTable() {
       const table = document.getElementById("dataTable");
@@ -160,12 +95,11 @@
           <td>${entry.notes}</td>
         `;
 
-        // زر مكتمل
         const completeBtn = document.createElement("button");
         completeBtn.className = "complete-btn " + (entry.completed ? "green" : "gray");
         completeBtn.innerText = entry.completed ? "✓ مكتمل" : "مكتمل";
 
-        if (!entry.completed && !isAdmin) {
+        if (!entry.completed) {
           completeBtn.onclick = () => {
             entry.completed = true;
             entry.completedBy = currentUser;
@@ -181,23 +115,11 @@
         byTd.innerText = entry.completedBy || "-";
         row.appendChild(byTd);
 
-        const adminTd = document.createElement("td");
-        if (isAdmin) {
-          const resetBtn = document.createElement("button");
-          resetBtn.className = "admin-btn";
-          resetBtn.innerText = "إلغاء";
-          resetBtn.onclick = () => {
-            entry.completed = false;
-            entry.completedBy = "";
-            renderTable();
-          };
-          adminTd.appendChild(resetBtn);
-        }
-        if (isAdmin) row.appendChild(adminTd);
-
         table.appendChild(row);
       });
     }
+
+    renderTable();
   </script>
 </body>
 </html>
