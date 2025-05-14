@@ -2,143 +2,108 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>مهام الصيانة</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: Arial, sans-serif;
       direction: rtl;
-      background: #f7f7f7;
+      background: #f4f4f4;
       padding: 20px;
       margin: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      height: 100vh;
-      justify-content: center;
     }
-
-    h2, h3, h4 {
-      text-align: center;
-      color: #2c3e50;
-    }
-
-    .hidden {
-      display: none;
-    }
-
     #main-section, #login-section {
       width: 100%;
-      max-width: 600px;
+      max-width: 500px;
       background-color: #ffffff;
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       margin-top: 30px;
     }
-
+    h2, h3, h4 {
+      text-align: center;
+      color: #333;
+    }
+    .hidden {
+      display: none;
+    }
     input, select {
-      padding: 12px;
-      margin: 10px 0;
+      padding: 10px;
+      margin: 8px 0;
       width: 100%;
       box-sizing: border-box;
-      border-radius: 8px;
+      border-radius: 6px;
       border: 1px solid #ccc;
-      font-size: 16px;
-      background-color: #f1f1f1;
-      transition: border-color 0.3s;
+      font-size: 15px;
     }
-
-    input:focus, select:focus {
-      border-color: #007bff;
+    .form-row {
+      display: flex;
+      gap: 10px;
     }
-
     .btn {
-      padding: 12px;
-      margin: 10px 0;
-      width: 100%;
+      padding: 10px;
+      margin: 6px 4px;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 14px;
       transition: background 0.3s;
-      background-color: #3498db;
+    }
+    .btn-primary {
+      background-color: #007bff;
       color: white;
     }
-
-    .btn:hover {
-      background-color: #2980b9;
+    .btn-primary:hover {
+      background-color: #0056b3;
     }
-
     .btn-complete {
-      background-color: #2ecc71;
+      background-color: gray;
+      color: white;
     }
-
     .btn-complete.done {
-      background-color: #27ae60;
+      background-color: green;
     }
-
-    .btn-incomplete {
-      background-color: #bdc3c7;
-      cursor: default;
+    .btn-complete.done:hover {
+      background-color: darkgreen;
     }
-
     .btn-danger {
-      background-color: #e74c3c;
+      background-color: #dc3545;
+      color: white;
     }
-
-    .btn-edit {
-      background-color: #f39c12;
+    .btn-danger:hover {
+      background-color: #a71d2a;
     }
-
     .card {
       width: 100%;
+      max-width: 500px;
       background: white;
-      padding: 20px;
-      margin: 15px 0;
+      padding: 15px;
+      margin: 10px 0;
       border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       font-weight: bold;
       text-align: right;
-      line-height: 1.8;
     }
-
-    #tasks-container {
-      width: 100%;
-    }
-
-    .input-row {
+    .card-buttons {
       display: flex;
-      gap: 10px;
-    }
-
-    .input-row > * {
-      flex: 1;
-    }
-
-    .btns-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    a.phone-link {
-      color: #3498db;
-      text-decoration: none;
-    }
-    a.phone-link:hover {
-      text-decoration: underline;
+      justify-content: space-between;
+      flex-wrap: wrap;
     }
   </style>
 </head>
-<body>
+<body oncontextmenu="return false" onkeydown="return !(event.keyCode==123 || (event.ctrlKey && event.key=='u'))">
   <div id="login-section">
     <h2>تسجيل الدخول</h2>
     <input type="text" id="username" placeholder="الاسم أو الرقم">
     <input type="password" id="password" placeholder="كلمة المرور">
-    <button class="btn" onclick="login()">تسجيل الدخول</button>
+    <button class="btn btn-primary" onclick="login()">تسجيل الدخول</button>
     <p id="login-error"></p>
   </div>
 
@@ -147,15 +112,15 @@
 
     <div id="admin-panel" class="hidden">
       <h4>إضافة مهمة جديدة</h4>
-      <div class="input-row">
+      <div class="form-row">
         <input type="text" id="task-phone" placeholder="رقم الهاتف">
-        <input type="text" id="task-note" placeholder="ملاحظة">
         <select id="task-type">
           <option value="تنصيب">تنصيب</option>
           <option value="صيانة">صيانة</option>
         </select>
       </div>
-      <button class="btn" onclick="addTask()">إضافة</button>
+      <input type="text" id="task-note" placeholder="ملاحظة">
+      <button class="btn btn-primary" onclick="addTask()">إضافة</button>
     </div>
 
     <h3>قائمة المهام</h3>
@@ -171,30 +136,28 @@
       messagingSenderId: "110606706563",
       appId: "1:110606706563:web:45f827ee08f0873decb8b6"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
     function login() {
       const username = document.getElementById("username").value;
       const password = document.getElementById("password").value;
-
       db.collection("users").where("username", "==", username).get().then(snapshot => {
         if (!snapshot.empty) {
-          const user = snapshot.docs[0].data();
-          if (user.password === password) {
-            document.getElementById("login-section").classList.add("hidden");
-            document.getElementById("main-section").classList.remove("hidden");
-            document.getElementById("user-name").textContent = username;
-
-            if (username === "admin") {
-              document.getElementById("admin-panel").classList.remove("hidden");
+          snapshot.forEach(doc => {
+            const user = doc.data();
+            if (user.password === password) {
+              document.getElementById("login-section").classList.add("hidden");
+              document.getElementById("main-section").classList.remove("hidden");
+              document.getElementById("user-name").textContent = username;
+              if (username === "admin") {
+                document.getElementById("admin-panel").classList.remove("hidden");
+              }
+              loadTasks(username);
+            } else {
+              document.getElementById("login-error").textContent = "كلمة المرور غير صحيحة";
             }
-
-            loadTasks(username);
-          } else {
-            document.getElementById("login-error").textContent = "كلمة المرور غير صحيحة";
-          }
+          });
         } else {
           document.getElementById("login-error").textContent = "المستخدم غير موجود";
         }
@@ -211,106 +174,65 @@
           completed: false,
           completedBy: "",
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
-          document.getElementById("task-phone").value = "";
-          document.getElementById("task-note").value = "";
         });
       }
     }
 
-    function loadTasks(currentUsername) {
+    function loadTasks(currentUser) {
       db.collection("tasks").orderBy("createdAt", "desc").onSnapshot(snapshot => {
         const container = document.getElementById("tasks-container");
         container.innerHTML = "";
         snapshot.forEach(doc => {
           const task = doc.data();
-          const id = doc.id;
-          const card = document.createElement("div");
-          card.className = "card";
-
-          card.innerHTML = `
-            <div><strong>📞 رقم الهاتف:</strong> <a class="phone-link" href="tel:${task.phone}">${task.phone}</a></div>
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            <div><strong>📞 الهاتف:</strong> <a href="tel:${task.phone}">${task.phone}</a></div>
+            <div><strong>🛠️ النوع:</strong> ${task.type}</div>
             <div><strong>📝 الملاحظة:</strong> ${task.note}</div>
-            <div><strong>🔧 النوع:</strong> ${task.type || "غير محدد"}</div>
-            <div><strong>📌 الحالة:</strong></div>
+            <div class="card-buttons"></div>
           `;
 
-          const button = document.createElement("button");
-          if (task.completed) {
-            button.className = "btn btn-complete";
-            button.textContent = `مكتملة بواسطة ${task.completedBy}`;
-            if (currentUsername === "admin") {
-              button.onclick = () => unmarkCompleted(id);
-            } else {
-              button.disabled = true;
-            }
+          const btnContainer = div.querySelector(".card-buttons");
+
+          const completeBtn = document.createElement("button");
+          completeBtn.className = `btn btn-complete ${task.completed ? 'done' : ''}`;
+          completeBtn.textContent = task.completed ? `مكتملة بواسطة ${task.completedBy}` : 'غير مكتملة';
+
+          if (task.completed && currentUser === "admin") {
+            completeBtn.onclick = () => db.collection("tasks").doc(doc.id).update({ completed: false, completedBy: "" });
+          } else if (!task.completed && currentUser !== "admin") {
+            completeBtn.onclick = () => db.collection("tasks").doc(doc.id).update({ completed: true, completedBy: currentUser });
           } else {
-            button.className = "btn btn-incomplete";
-            button.textContent = "غير مكتملة";
-            if (currentUsername !== "admin") {
-              button.disabled = false;
-              button.onclick = () => completeTask(id, currentUsername);
+            completeBtn.disabled = true;
+          }
+
+          const editBtn = document.createElement("button");
+          editBtn.className = "btn btn-primary";
+          editBtn.textContent = "تعديل المهمة";
+          editBtn.onclick = () => {
+            const newPhone = prompt("رقم الهاتف الجديد:", task.phone);
+            const newNote = prompt("الملاحظة الجديدة:", task.note);
+            const newType = prompt("النوع الجديد:", task.type);
+            if (newPhone && newNote && newType) {
+              db.collection("tasks").doc(doc.id).update({ phone: newPhone, note: newNote, type: newType });
             }
+          };
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "btn btn-danger";
+          deleteBtn.textContent = "حذف المهمة";
+          deleteBtn.onclick = () => db.collection("tasks").doc(doc.id).delete();
+
+          btnContainer.appendChild(completeBtn);
+          if (currentUser === "admin") {
+            btnContainer.appendChild(editBtn);
+            btnContainer.appendChild(deleteBtn);
           }
-
-          card.appendChild(button);
-
-          if (currentUsername === "admin") {
-            const editBtn = document.createElement("button");
-            editBtn.textContent = "تعديل المهمة";
-            editBtn.className = "btn btn-edit";
-            editBtn.onclick = () => {
-              const newPhone = prompt("رقم الهاتف الجديد:", task.phone);
-              const newNote = prompt("الملاحظة الجديدة:", task.note);
-              const newType = prompt("النوع (تنصيب أو صيانة):", task.type || "");
-              if (newPhone && newNote && newType) {
-                db.collection("tasks").doc(id).update({
-                  phone: newPhone,
-                  note: newNote,
-                  type: newType
-                });
-              }
-            };
-            card.appendChild(editBtn);
-          }
-
-          container.appendChild(card);
+          container.appendChild(div);
         });
       });
     }
-
-    function completeTask(taskId, username) {
-      db.collection("tasks").doc(taskId).update({
-        completed: true,
-        completedBy: username
-      });
-    }
-
-    function unmarkCompleted(taskId) {
-      db.collection("tasks").doc(taskId).update({
-        completed: false,
-        completedBy: ""
-      });
-    }
-
-    // 🛡️ الحماية من عرض الكود عبر F12 / Ctrl+U / إلخ
-    document.addEventListener("keydown", function(e) {
-      if (
-        e.key === "F12" || 
-        (e.ctrlKey && e.shiftKey && e.key === "I") ||
-        (e.ctrlKey && e.key === "U") ||
-        (e.ctrlKey && e.key === "S")
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        alert("تم تعطيل عرض الكود");
-      }
-    });
-
-    document.addEventListener("contextmenu", function(e) {
-      e.preventDefault();
-      alert("تم تعطيل الزر الأيمن");
-    });
   </script>
 </body>
 </html>
