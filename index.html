@@ -139,20 +139,37 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    // عند تحميل الصفحة، تحقق من وجود المستخدم في الذاكرة المحلية
+    window.onload = function() {
+      const savedUsername = localStorage.getItem('username');
+      const savedPassword = localStorage.getItem('password');
+      
+      if (savedUsername && savedPassword) {
+        login(savedUsername, savedPassword);
+      }
+    };
+
     function login() {
       const username = document.getElementById("username").value;
       const password = document.getElementById("password").value;
+      
       db.collection("users").where("username", "==", username).get().then(snapshot => {
         if (!snapshot.empty) {
           snapshot.forEach(doc => {
             const user = doc.data();
             if (user.password === password) {
+              // حفظ اليوزر والباسورد في الذاكرة المحلية
+              localStorage.setItem('username', username);
+              localStorage.setItem('password', password);
+
               document.getElementById("login-section").classList.add("hidden");
               document.getElementById("main-section").classList.remove("hidden");
               document.getElementById("user-name").textContent = username;
+
               if (username === "admin") {
                 document.getElementById("admin-panel").classList.remove("hidden");
               }
+
               loadTasks(username);
             } else {
               document.getElementById("login-error").textContent = "كلمة المرور غير صحيحة";
