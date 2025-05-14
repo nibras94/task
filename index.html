@@ -1,0 +1,203 @@
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>إدارة البيانات</title>
+  <style>
+    body {
+      font-family: "Cairo", sans-serif;
+      direction: rtl;
+      background: #f2f2f2;
+      padding: 30px;
+      color: #333;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    #adminForm {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      width: 200px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background-color: #2196f3;
+      color: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 15px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background-color: #fafafa;
+    }
+
+    .complete-btn {
+      padding: 6px 15px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    .gray {
+      background-color: #bbb;
+      color: white;
+    }
+
+    .green {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .admin-btn {
+      background-color: #f44336;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+  <h2>نظام تتبع المهام</h2>
+
+  <!-- نموذج الإدخال -->
+  <div id="adminForm" style="display: none;">
+    <input type="text" id="name" placeholder="الاسم">
+    <input type="text" id="phone" placeholder="رقم الهاتف">
+    <input type="text" id="notes" placeholder="ملاحظات">
+    <button onclick="addEntry()">إضافة</button>
+  </div>
+
+  <!-- جدول البيانات -->
+  <table>
+    <thead>
+      <tr>
+        <th>الاسم</th>
+        <th>رقم الهاتف</th>
+        <th>ملاحظات</th>
+        <th>الحالة</th>
+        <th>بواسطة</th>
+        <th id="adminCol" style="display: none;">تحكم الأدمن</th>
+      </tr>
+    </thead>
+    <tbody id="dataTable"></tbody>
+  </table>
+
+  <script>
+    // 🧠 تغيير بين "true" (أدمن) و "false" (مستخدم عادي)
+    let isAdmin = true;
+    let currentUser = "admin@example.com";
+    let entries = [];
+
+    if (isAdmin) {
+      document.getElementById("adminForm").style.display = "flex";
+      document.getElementById("adminCol").style.display = "table-cell";
+    }
+
+    function addEntry() {
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const notes = document.getElementById("notes").value.trim();
+
+      if (name && phone) {
+        entries.unshift({
+          name,
+          phone,
+          notes,
+          completed: false,
+          completedBy: ""
+        });
+        renderTable();
+        document.getElementById("name").value = "";
+        document.getElementById("phone").value = "";
+        document.getElementById("notes").value = "";
+      } else {
+        alert("يرجى إدخال الاسم ورقم الهاتف");
+      }
+    }
+
+    function renderTable() {
+      const table = document.getElementById("dataTable");
+      table.innerHTML = "";
+
+      entries.forEach((entry, index) => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+          <td>${entry.name}</td>
+          <td>${entry.phone}</td>
+          <td>${entry.notes}</td>
+        `;
+
+        // زر مكتمل
+        const completeBtn = document.createElement("button");
+        completeBtn.className = "complete-btn " + (entry.completed ? "green" : "gray");
+        completeBtn.innerText = entry.completed ? "✓ مكتمل" : "مكتمل";
+
+        if (!entry.completed && !isAdmin) {
+          completeBtn.onclick = () => {
+            entry.completed = true;
+            entry.completedBy = currentUser;
+            renderTable();
+          };
+        }
+
+        const completeTd = document.createElement("td");
+        completeTd.appendChild(completeBtn);
+        row.appendChild(completeTd);
+
+        const byTd = document.createElement("td");
+        byTd.innerText = entry.completedBy || "-";
+        row.appendChild(byTd);
+
+        const adminTd = document.createElement("td");
+        if (isAdmin) {
+          const resetBtn = document.createElement("button");
+          resetBtn.className = "admin-btn";
+          resetBtn.innerText = "إلغاء";
+          resetBtn.onclick = () => {
+            entry.completed = false;
+            entry.completedBy = "";
+            renderTable();
+          };
+          adminTd.appendChild(resetBtn);
+        }
+        if (isAdmin) row.appendChild(adminTd);
+
+        table.appendChild(row);
+      });
+    }
+  </script>
+</body>
+</html>
