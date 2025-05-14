@@ -1,64 +1,316 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-            margin: 0;
-        }
-        .login-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 300px;
-        }
-        .login-container input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .login-container button {
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .login-container button:hover {
-            background-color: #45a049;
-        }
-        h2 {
-            text-align: center;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>مهام الصيانة</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      direction: rtl;
+      background: #f7f7f7;
+      padding: 20px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      justify-content: center;
+    }
+
+    h2, h3, h4 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #main-section, #login-section {
+      width: 100%;
+      max-width: 600px;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-top: 30px;
+    }
+
+    input, select {
+      padding: 12px;
+      margin: 10px 0;
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      background-color: #f1f1f1;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, select:focus {
+      border-color: #007bff;
+    }
+
+    .btn {
+      padding: 12px;
+      margin: 10px 0;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s;
+      background-color: #3498db;
+      color: white;
+    }
+
+    .btn:hover {
+      background-color: #2980b9;
+    }
+
+    .btn-complete {
+      background-color: #2ecc71;
+    }
+
+    .btn-complete.done {
+      background-color: #27ae60;
+    }
+
+    .btn-incomplete {
+      background-color: #bdc3c7;
+      cursor: default;
+    }
+
+    .btn-danger {
+      background-color: #e74c3c;
+    }
+
+    .btn-edit {
+      background-color: #f39c12;
+    }
+
+    .card {
+      width: 100%;
+      background: white;
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      font-weight: bold;
+      text-align: right;
+      line-height: 1.8;
+    }
+
+    #tasks-container {
+      width: 100%;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .input-row > * {
+      flex: 1;
+    }
+
+    .btns-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    a.phone-link {
+      color: #3498db;
+      text-decoration: none;
+    }
+    a.phone-link:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-    <div class="login-container">
-        <h2>تسجيل الدخول</h2>
-        <form id="loginForm">
-            <input type="email" id="email" placeholder="البريد الإلكتروني" required />
-            <input type="password" id="password" placeholder="كلمة المرور" required />
-            <button type="submit">دخول</button>
-        </form>
+  <div id="login-section">
+    <h2>تسجيل الدخول</h2>
+    <input type="text" id="username" placeholder="الاسم أو الرقم">
+    <input type="password" id="password" placeholder="كلمة المرور">
+    <button class="btn" onclick="login()">تسجيل الدخول</button>
+    <p id="login-error"></p>
+  </div>
+
+  <div id="main-section" class="hidden">
+    <h3>مرحباً <span id="user-name"></span></h3>
+
+    <div id="admin-panel" class="hidden">
+      <h4>إضافة مهمة جديدة</h4>
+      <div class="input-row">
+        <input type="text" id="task-phone" placeholder="رقم الهاتف">
+        <input type="text" id="task-note" placeholder="ملاحظة">
+        <select id="task-type">
+          <option value="تنصيب">تنصيب</option>
+          <option value="صيانة">صيانة</option>
+        </select>
+      </div>
+      <button class="btn" onclick="addTask()">إضافة</button>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"></script>
+    <h3>قائمة المهام</h3>
+    <div id="tasks-container"></div>
+  </div>
 
-    <script src="app.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAaOSLLJZGWicH-Vtnjup0DG-Opbyx4_OE",
+      authDomain: "task-manager-site-f0346.firebaseapp.com",
+      projectId: "task-manager-site-f0346",
+      storageBucket: "task-manager-site-f0346.appspot.com",
+      messagingSenderId: "110606706563",
+      appId: "1:110606706563:web:45f827ee08f0873decb8b6"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      db.collection("users").where("username", "==", username).get().then(snapshot => {
+        if (!snapshot.empty) {
+          const user = snapshot.docs[0].data();
+          if (user.password === password) {
+            document.getElementById("login-section").classList.add("hidden");
+            document.getElementById("main-section").classList.remove("hidden");
+            document.getElementById("user-name").textContent = username;
+
+            if (username === "admin") {
+              document.getElementById("admin-panel").classList.remove("hidden");
+            }
+
+            loadTasks(username);
+          } else {
+            document.getElementById("login-error").textContent = "كلمة المرور غير صحيحة";
+          }
+        } else {
+          document.getElementById("login-error").textContent = "المستخدم غير موجود";
+        }
+      });
+    }
+
+    function addTask() {
+      const phone = document.getElementById("task-phone").value;
+      const note = document.getElementById("task-note").value;
+      const type = document.getElementById("task-type").value;
+      if (phone && note) {
+        db.collection("tasks").add({
+          phone, note, type,
+          completed: false,
+          completedBy: "",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+          document.getElementById("task-phone").value = "";
+          document.getElementById("task-note").value = "";
+        });
+      }
+    }
+
+    function loadTasks(currentUsername) {
+      db.collection("tasks").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+        const container = document.getElementById("tasks-container");
+        container.innerHTML = "";
+        snapshot.forEach(doc => {
+          const task = doc.data();
+          const id = doc.id;
+          const card = document.createElement("div");
+          card.className = "card";
+
+          card.innerHTML = `
+            <div><strong>📞 رقم الهاتف:</strong> <a class="phone-link" href="tel:${task.phone}">${task.phone}</a></div>
+            <div><strong>📝 الملاحظة:</strong> ${task.note}</div>
+            <div><strong>🔧 النوع:</strong> ${task.type || "غير محدد"}</div>
+            <div><strong>📌 الحالة:</strong></div>
+          `;
+
+          const button = document.createElement("button");
+          if (task.completed) {
+            button.className = "btn btn-complete";
+            button.textContent = `مكتملة بواسطة ${task.completedBy}`;
+            if (currentUsername === "admin") {
+              button.onclick = () => unmarkCompleted(id);
+            } else {
+              button.disabled = true;
+            }
+          } else {
+            button.className = "btn btn-incomplete";
+            button.textContent = "غير مكتملة";
+            if (currentUsername !== "admin") {
+              button.disabled = false;
+              button.onclick = () => completeTask(id, currentUsername);
+            }
+          }
+
+          card.appendChild(button);
+
+          if (currentUsername === "admin") {
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "تعديل المهمة";
+            editBtn.className = "btn btn-edit";
+            editBtn.onclick = () => {
+              const newPhone = prompt("رقم الهاتف الجديد:", task.phone);
+              const newNote = prompt("الملاحظة الجديدة:", task.note);
+              const newType = prompt("النوع (تنصيب أو صيانة):", task.type || "");
+              if (newPhone && newNote && newType) {
+                db.collection("tasks").doc(id).update({
+                  phone: newPhone,
+                  note: newNote,
+                  type: newType
+                });
+              }
+            };
+            card.appendChild(editBtn);
+          }
+
+          container.appendChild(card);
+        });
+      });
+    }
+
+    function completeTask(taskId, username) {
+      db.collection("tasks").doc(taskId).update({
+        completed: true,
+        completedBy: username
+      });
+    }
+
+    function unmarkCompleted(taskId) {
+      db.collection("tasks").doc(taskId).update({
+        completed: false,
+        completedBy: ""
+      });
+    }
+
+    // 🛡️ الحماية من عرض الكود عبر F12 / Ctrl+U / إلخ
+    document.addEventListener("keydown", function(e) {
+      if (
+        e.key === "F12" || 
+        (e.ctrlKey && e.shiftKey && e.key === "I") ||
+        (e.ctrlKey && e.key === "U") ||
+        (e.ctrlKey && e.key === "S")
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+        alert("تم تعطيل عرض الكود");
+      }
+    });
+
+    document.addEventListener("contextmenu", function(e) {
+      e.preventDefault();
+      alert("تم تعطيل الزر الأيمن");
+    });
+  </script>
 </body>
 </html>
